@@ -22,9 +22,9 @@ lazy_static! {
         tss.interrupt_stack_table[DOUBLE_FAULT_FIRST_INDEX as usize] = {
             const STACK_SIZE : usize = 4096 * 5;
             static mut STACK : [u8 ; STACK_SIZE] = [0 ; STACK_SIZE];
-            let STACK_START = VirtAddr::from_ptr(unsafe {&STACK});
-            let STACK_END = STACK_START + STACK_SIZE;
-            STACK_END
+            let stack_start = VirtAddr::from_ptr(unsafe {&STACK});
+            let stack_end = stack_start + STACK_SIZE;
+            stack_end
         };
         tss
     };

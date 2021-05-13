@@ -5,6 +5,7 @@
 #![feature(decl_macro)]
 #![feature(abi_x86_interrupt)]
 #![feature(alloc_error_handler)] // at the top of the file
+#![feature(const_fn)]
 
 #[alloc_error_handler]
 fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
@@ -13,18 +14,17 @@ fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
 
 extern crate alloc;
 
+use bootloader::BootInfo;
 
 pub mod io;
 pub mod qemu;
 pub mod gfx;
 pub mod interrupts;
+pub mod allocation;
 
 
-pub fn init_modules(boot_info : &BootInfo) {
+pub fn init_modules(_boot_info : &BootInfo) {
     interrupts::init();
-    unsafe {
-        tinix_alloc::paging::mapper::init(boot_info);
-    }
 }
 
 pub fn init_modules_no_alloc() {
@@ -41,13 +41,3 @@ pub fn pause(ticks : usize) {
     }
 }
 
-
-use bootloader::BootInfo;
-use linked_list_allocator::LockedHeap;
-
-#[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
-
-fn init_heap() {
-
-}

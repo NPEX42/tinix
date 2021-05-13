@@ -47,8 +47,6 @@ extern "x86-interrupt" fn timer_tick(_info : &mut InterruptStackFrame) {
 }
 
 extern "x86-interrupt" fn keyboard_interrupt(_info : &mut InterruptStackFrame) {
-    let mut keyboard_port : Port<u8> = Port::new(0x60);
-    let scancode = unsafe {keyboard_port.read()};
 
     lazy_static! {
         static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
