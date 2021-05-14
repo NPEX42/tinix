@@ -4,15 +4,9 @@
 #![no_std]
 #![feature(decl_macro)]
 #![feature(abi_x86_interrupt)]
-#![feature(alloc_error_handler)] // at the top of the file
+// #![feature(alloc_error_handler)] // at the top of the file
 #![feature(const_fn)]
 
-#[alloc_error_handler]
-fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
-    panic!("allocation error: {:?}", layout)
-}
-
-extern crate alloc;
 
 use bootloader::BootInfo;
 
@@ -20,7 +14,6 @@ pub mod io;
 pub mod qemu;
 pub mod gfx;
 pub mod interrupts;
-pub mod allocation;
 
 
 pub fn init_modules(_boot_info : &BootInfo) {
