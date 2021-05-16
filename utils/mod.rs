@@ -17,3 +17,4 @@ pub fn get_ah() -> i8 {
 pub fn get_ax() -> i16 {
     return (((get_ah() as i16) << 8) | get_al() as i16) as i16;
 }
+
