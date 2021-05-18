@@ -8,6 +8,7 @@
 #![feature(const_fn)]
 #![feature(asm)]
 
+extern crate alloc;
 
 use bootloader::BootInfo;
 
@@ -16,6 +17,7 @@ pub mod qemu;
 pub mod gfx;
 pub mod interrupts;
 pub mod utils;
+pub mod devices;
 
 pub fn disable_interrupts() {
     x86_64::instructions::interrupts::disable();
