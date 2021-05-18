@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 use spin::Mutex;
 use volatile::Volatile;
 
+use x86_64::instructions::port::Port;
+
 const VGA_GFX_MODE_START             : usize = 0xA0000;
 const VGA_MONOCHROME_TEXT_MODE_START : usize = 0xB0000;
 const VGA_COLOR_TEXT_MODE_START      : usize = 0xB8000;
@@ -11,11 +13,21 @@ const VGA_COLOR_TEXT_MODE_START      : usize = 0xB8000;
 pub const SCREEN_HEIGHT : usize = 25;
 pub const SCREEN_WIDTH  : usize = 80;
 
+pub const GFX_SCREEN_HEIGHT : usize = 200;
+pub const GFX_SCREEN_WIDTH  : usize = 320;
+
 lazy_static! {
     pub static ref GLOBAL_VGA_BUFFER : Mutex<&'static mut ScreenBuffer> = Mutex::new(
         ScreenBuffer::text_mode80x25()
     );
 }
+
+lazy_static! {
+    pub static ref GLOBAL_GFX_BUFFER : Mutex<&'static mut GraphicsBuffer> = Mutex::new(
+        GraphicsBuffer::new()
+    );
+}
+
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[repr(u8)]
@@ -177,4 +189,107 @@ impl ScreenBuffer {
         self.data[y][x].read().code_point
     }
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[repr(u8)]
+pub enum VgaMode {
+    TEXT_80x25  = 0x03,
+    GFX_320x200 = 0x13
+}
+
+impl VgaMode {
+    pub fn as_u8(self) -> u8 {
+        self as u8
+    }
+}
+
+const VGA_INDEX_DATA_PORT  : u16 = 0x3C0;
+const VGA_MODE_INDEX       : u8  = 0x010;
+const VGA_INDEX_RESET_PORT : u16 = 0x3DA;
+
+pub fn set_mode(mode : VgaMode) {
+    write_to_data_port(VGA_MODE_INDEX, mode.as_u8())
+}
+
+fn reset_vga_index_data_port() {
+    let mut port : Port<u8> = Port::new(VGA_INDEX_RESET_PORT);
+    unsafe {port.read();}
+}
+
+fn write_to_data_port(index : u8, data : u8) {
+    write_index(index);
+    write_data(data);
+}
+
+fn write_index(index : u8) {
+    reset_vga_index_data_port();
+    let mut port : Port<u8> = Port::new(VGA_INDEX_DATA_PORT);
+    unsafe {port.write(index)}
+}
+
+fn write_data(data : u8) {
+    let mut port : Port<u8> = Port::new(VGA_INDEX_RESET_PORT);
+    unsafe {port.write(data)}
+}
+
+
+
+
+
+
+//Graphics Mode Stuff ======================================================================
+
+#[derive(Copy, Clone)]
+#[repr(transparent)]
+pub struct Pixel(u8);
+
+impl Pixel {
+    pub fn as_u8(self) -> u8 {
+        self.0
+    }
+
+    pub fn from_u8(c : u8) -> Pixel {
+        Pixel(c)
+    }
+
+    pub fn from_color(c : Color) -> Pixel {
+        Pixel::from_u8(c.as_u8())
+    }
+
+    pub fn new(c : u8) -> Pixel {
+        Pixel(c)
+    }
+}
+
+#[repr(transparent)]
+#[derive(Clone)]
+pub struct GraphicsBuffer {
+    pixels : [[Volatile<Pixel> ; 320]; 200]
+}
+
+impl GraphicsBuffer {
+    pub fn new() -> &'static mut GraphicsBuffer {
+        unsafe { &mut *(VGA_GFX_MODE_START as *mut GraphicsBuffer) }
+    }
+
+    pub fn set_pixel(&mut self, x:usize, y:usize, pixel:Pixel) {
+        self.pixels[y][x].write(pixel)
+    }
+
+    pub fn get_pixel(&mut self, x:usize, y:usize) -> Pixel {
+        self.pixels[y][x].read()
+    }
+
+    pub fn fill(&mut self, pixel:Pixel) {
+        for x in 0..GFX_SCREEN_WIDTH {
+            for y in 0..GFX_SCREEN_HEIGHT {
+                self.set_pixel(x,y, pixel);
+            }  
+        }
+    }
+}
+
+
+
+
 

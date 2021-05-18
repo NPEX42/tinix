@@ -4,16 +4,11 @@ use x86_64::instructions::interrupts::without_interrupts;
 
 use vga::Char;
 
-use vga::{Color, ColorCode};
+use vga::{Color, ColorCode, Pixel};
 
 pub fn set_cell_color(x:usize, y:usize, fg:vga::Color, bg:vga::Color) {
     without_interrupts(|| {
-        let char = vga::GLOBAL_VGA_BUFFER.lock().get_ascii_char(x, y);
-        vga::GLOBAL_VGA_BUFFER.lock().set_char(
-                x, y,
-            Char::new(char,ColorCode::from_colors(fg, bg)
-            )
-        );
+        vga::GLOBAL_GFX_BUFFER.lock().set_pixel(x,y, Pixel::from_color(bg));
     });
 }
 
@@ -31,12 +26,9 @@ pub fn get_bg(x:usize, y:usize) -> Color {
     vga::GLOBAL_VGA_BUFFER.lock().get_char(x,y).color.bg_as_color()
 }
 
-pub fn clear(bg : Color) {
-    for y in 0..vga::SCREEN_HEIGHT {
-        for x in 0..vga::SCREEN_WIDTH {
-            set_cell(x, y,b' ', Color::White, bg);
-        }
-    }
+pub fn clear(color:Pixel) {
+    vga::GLOBAL_GFX_BUFFER.lock().fill(color);
+    
 }
 
 pub fn draw(x:usize, y:usize, chr:u8, fg:vga::Color, bg:vga::Color) {
@@ -84,4 +76,8 @@ pub fn draw_rect(x:usize, y:usize, w:usize, h:usize, color:vga::Color) {
             draw(col, row, b' ', Color::Black, color);
         }
     }
+}
+
+pub fn set_gfx_mode(mode : vga::VgaMode) {
+    vga::set_mode(mode)
 }
