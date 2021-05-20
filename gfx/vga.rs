@@ -5,6 +5,12 @@ use spin::Mutex;
 use volatile::Volatile;
 
 use x86_64::instructions::port::Port;
+use x86_64::instructions::interrupts::without_interrupts;
+use core::borrow::Borrow;
+
+const VGA_BUFFERS_START     : usize = 0x80000;
+const VGA_BUFFER_1_START    : usize = 0x90000;
+const VGA_BUFFER_2_START    : usize = 0x98000;      
 
 const VGA_GFX_MODE_START             : usize = 0xA0000;
 const VGA_MONOCHROME_TEXT_MODE_START : usize = 0xB0000;
@@ -19,6 +25,18 @@ pub const GFX_SCREEN_WIDTH  : usize = 320;
 lazy_static! {
     pub static ref GLOBAL_VGA_BUFFER : Mutex<&'static mut ScreenBuffer> = Mutex::new(
         ScreenBuffer::text_mode80x25()
+    );
+}
+
+lazy_static! {
+    pub static ref GLOBAL_VGA_BUFFER_2 : Mutex<&'static mut ScreenBuffer> = Mutex::new(
+        ScreenBuffer::from_addr(0x10000)
+    );
+}
+
+lazy_static! {
+    pub static ref GLOBAL_VGA_BUFFER_3 : Mutex<&'static mut ScreenBuffer> = Mutex::new(
+        ScreenBuffer::gfx_l32k()
     );
 }
 
@@ -77,6 +95,24 @@ impl Color {
             _  => { Color::White     }
         }
     }
+}
+
+pub fn swap_buffers() {
+    without_interrupts(|| {
+        //crate::serial_println!("Swapping Buffers...");
+    //Preserve COLOR_VGA_TM Buffer in Low 32K of the GFX Buffer
+    {
+        GLOBAL_VGA_BUFFER.lock().copy_to(VGA_GFX_MODE_START);
+    }
+    //Copy Monochrome Buffer to Color Buffer
+    {
+        GLOBAL_VGA_BUFFER_2.lock().copy_to(VGA_COLOR_TEXT_MODE_START);
+    }
+    //Copy Low 32K of the GFX Buffer to the Monochrome Buffer
+    {
+        GLOBAL_VGA_BUFFER_3.lock().copy_to(VGA_MONOCHROME_TEXT_MODE_START)
+    }
+    });
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -158,7 +194,23 @@ pub struct ScreenBuffer {
 
 impl ScreenBuffer {
     pub fn text_mode80x25() -> &'static mut ScreenBuffer {
-        unsafe { &mut *(VGA_COLOR_TEXT_MODE_START as *mut ScreenBuffer) }
+        ScreenBuffer::from_addr(VGA_COLOR_TEXT_MODE_START)
+    }
+
+    pub fn mono_text_mode80x25() -> &'static mut ScreenBuffer {
+        ScreenBuffer::from_addr(VGA_MONOCHROME_TEXT_MODE_START)
+    }
+
+    pub fn gfx_l32k() -> &'static mut ScreenBuffer {
+        ScreenBuffer::from_addr(VGA_GFX_MODE_START)
+    }
+
+    pub fn gfx_h32k() -> &'static mut ScreenBuffer {
+        ScreenBuffer::from_addr(VGA_GFX_MODE_START + 32768)
+    }
+
+    pub fn from_addr(start : usize) -> &'static mut ScreenBuffer {
+        unsafe { &mut *(start as *mut ScreenBuffer) }
     }
 
     pub fn set_char(&mut self, x:usize, y:usize, c:Char) {
@@ -187,6 +239,15 @@ impl ScreenBuffer {
 
     pub fn get_ascii_char(&self, x:usize, y:usize) -> u8 {
         self.data[y][x].read().code_point
+    }
+
+    pub fn copy_to(&self,addr : usize) {
+        let buffer = ScreenBuffer::from_addr(addr);
+        for y in 0..25 {
+            for x in 0..80 {
+                buffer.data[y][x].write(self.data[y][x].read());
+            };
+        }
     }
 }
 

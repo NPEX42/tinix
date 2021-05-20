@@ -18,6 +18,11 @@ pub mod gfx;
 pub mod interrupts;
 pub mod utils;
 pub mod devices;
+pub mod maths;
+
+pub fn set_tick_rate(rate : usize) {
+    interrupts::pit::set_frequency(rate);
+}
 
 pub fn disable_interrupts() {
     x86_64::instructions::interrupts::disable();

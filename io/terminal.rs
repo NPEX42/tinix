@@ -2,7 +2,7 @@ use core::fmt::Write;
 use crate::io::printer::Printer;
 use x86_64::instructions::interrupts;
 use crate::gfx::vga::{
-    ScreenBuffer, ColorCode, Char, SCREEN_HEIGHT, SCREEN_WIDTH, Color
+    ScreenBuffer, ColorCode, Char, SCREEN_HEIGHT, SCREEN_WIDTH, Color, GLOBAL_VGA_BUFFER_2
 };
 use lazy_static::lazy_static;
 use spin::Mutex;
@@ -31,7 +31,7 @@ impl Terminal {
         Terminal {
             row     : SCREEN_HEIGHT - 1,
             col     : 0,
-            buffer  : ScreenBuffer::text_mode80x25(),
+            buffer  : ScreenBuffer::mono_text_mode80x25(),
             color   : color
         }
     }
@@ -42,6 +42,7 @@ impl Printer for Terminal {
         for byte in s.bytes() {
             self.print_u8(byte);
         }
+        //crate::gfx::vga::swap_buffers();
     }
 
     fn print_u8(&mut self, b:u8) {
@@ -70,6 +71,8 @@ impl Printer for Terminal {
             self.print_u8(b' ');
         }
     }
+
+
 }
 
 impl Write for Terminal {

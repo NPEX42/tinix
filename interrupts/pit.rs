@@ -1,35 +1,43 @@
-
 use x86_64::instructions::port::Port;
-use crate::serial_println;
+use x86_64::instructions::interrupts::without_interrupts;
 
-pub const PIT_FREQ : usize = 1193182; //1.193182MHz
-
-pub fn set_frequency(freq : usize) {
-    let mut mod_freq = freq;
-
-    
-    if mod_freq < 18  { mod_freq = 18; }
-    if mod_freq > PIT_FREQ  {mod_freq = PIT_FREQ}
-    serial_println!("Setting Frequency Value To {:}...", mod_freq);
-
-    let reload_val : u16 = (mod_freq / PIT_FREQ) as u16;
-
-    let hi_byte : u8 = ((reload_val & 0xff00) >> 8) as u8;
-    let lo_byte : u8 = ((reload_val & 0x00ff) >> 0) as u8;
-
-    let mut command_port : Port<u8> = Port::new(0x43);
-    let mut data_port    : Port<u8> = Port::new(0x40);
-
-    serial_println!("Setting Reload Value To {}...", reload_val);
-
-    x86_64::instructions::interrupts::disable();
-    let command : u8 = 0x36;
-    serial_println!("Setting Reload Value To {:02x}...", command);
-
-    unsafe {
-        command_port.write(command);
-        data_port.write(lo_byte);
-        data_port.write(hi_byte);
-    }
-    x86_64::instructions::interrupts::enable();
+pub fn set_frequency(f : usize) {
+    let mut value = FREQUENCY / f;
+    unsafe {set_reload_value(value as u16)};
 }
+
+unsafe fn set_reload_value(mut value : u16) {    
+    without_interrupts( || {
+        let mut data_port = Port::new(DATA_PORT_0);
+        let mut command_port = Port::new(COMMAND_PORT);
+        command_port.write(CHANNEL_0 | ACCESS_LOBYTE_HIBYTE | MODE_3);
+        data_port.write(value & 0x00FF);
+        data_port.write((value & 0xFF00) >> 8);
+    }); 
+}
+
+//Runs at 1.193182MHz
+pub static FREQUENCY : usize = 1_193_182;
+
+pub static DATA_PORT_0  : u16 = 0x0040;
+pub static DATA_PORT_1  : u16 = 0x0041;
+pub static DATA_PORT_2  : u16 = 0x0042;
+pub static COMMAND_PORT : u16 = 0x0043;
+
+
+pub static CHANNEL_0 : u8 = 0b00000000;
+pub static CHANNEL_1 : u8 = 0b01000000;
+pub static CHANNEL_2 : u8 = 0b10000000;
+pub static READ_BACK : u8 = 0b11000000;
+
+pub static LATCH_COUNT_VALUE    : u8 = 0b00000000; 
+pub static ACCESS_LOBYTE        : u8 = 0b00010000;
+pub static ACCESS_HIBYTE        : u8 = 0b00100000;
+pub static ACCESS_LOBYTE_HIBYTE : u8 = 0b00110000;
+
+pub static MODE_0 : u8 = 0b0000;
+pub static MODE_1 : u8 = 0b0010;
+pub static MODE_2 : u8 = 0b0100;
+pub static MODE_3 : u8 = 0b0110;
+pub static MODE_4 : u8 = 0b1000;
+pub static MODE_5 : u8 = 0b1010;
