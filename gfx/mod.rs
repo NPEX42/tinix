@@ -1,6 +1,7 @@
 pub mod vga;
 pub mod drawables;
 pub mod widgets;
+pub mod windows;
 
 use core::fmt::{Arguments, Write};
 

@@ -10,7 +10,8 @@ pub struct ProgressBar {
     scale       : usize,
     x_pos       : usize,
     y_pos       : usize,
-    base_col    : Color
+    base_col    : Color,
+    text_col    : (Color, Color)
 }
 
 impl Drawable for ProgressBar {
@@ -22,7 +23,7 @@ impl Drawable for ProgressBar {
             1,
             self.base_col
         );
-        super::draw_string!(self.x_pos + self.scale, self.y_pos, (Color::White, Color::Blue), " | {:03.02}%", (self.fill * 100f32));
+        super::draw_string!(self.x_pos + self.scale, self.y_pos, self.text_col, " | {:03.02}%", (self.fill * 100f32));
     }
 }
 
@@ -37,7 +38,9 @@ impl ProgressBar {
             scale       :   scale,
 
             fill        :   0f32,
-            value       :   min
+            value       :   min,
+
+            text_col    :   (Color::White, Color::Blue)
         }
     }
 
@@ -46,7 +49,13 @@ impl ProgressBar {
         self.update();
     }
 
+    pub fn set_text_color(&mut self, col : (Color, Color)) {
+        self.text_col = col
+    }
+
     fn update(&mut self) {
         self.fill = crate::maths::map01_f(self.value as f32, self.min as f32, self.max as f32)
     }
+
+
 }
