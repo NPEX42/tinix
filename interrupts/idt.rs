@@ -43,6 +43,7 @@ extern "x86-interrupt" fn breakpoint(_info : &mut InterruptStackFrame) {
 
 extern "x86-interrupt" fn timer_tick(_info : &mut InterruptStackFrame) {
     //print!(".");
+    super::global_timer::update();
     super::pic::fire_eoi(InterruptIndex::TIMER.as_u8());
 }
 

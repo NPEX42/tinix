@@ -20,8 +20,11 @@ pub mod utils;
 pub mod devices;
 pub mod maths;
 
+static mut FREQ : usize = 0;
+
 pub fn set_tick_rate(rate : usize) {
     interrupts::pit::set_frequency(rate);
+    unsafe {FREQ = rate};
 }
 
 pub fn disable_interrupts() {
@@ -49,5 +52,13 @@ pub fn pause(ticks : usize) {
     for _ in 0..=ticks {
         x86_64::instructions::interrupts::enable_and_hlt();
     }
+}
+
+pub fn pause_seconds(seconds : f32) {
+    pause((seconds * get_frequency() as f32) as usize)
+}
+
+pub fn get_frequency() -> usize {
+    unsafe {FREQ}
 }
 

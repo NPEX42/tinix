@@ -2,6 +2,7 @@ pub mod idt;
 pub mod pic;
 pub mod pit;
 pub mod gdt;
+pub mod global_timer;
 
 pub fn init() {
     idt::init();

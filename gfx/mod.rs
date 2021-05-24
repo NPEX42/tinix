@@ -19,7 +19,9 @@ pub fn set_cell_color(x:usize, y:usize, fg:vga::Color, bg:vga::Color) {
     set_cell(x, y, b' ', fg, bg);
 }
 
-pub fn set_cell(x:usize, y:usize, chr:u8, fg:vga::Color, bg:vga::Color) {
+pub fn set_cell(mut x:usize,mut  y:usize, chr:u8, fg:vga::Color, bg:vga::Color) {
+    if x >= 80 { x = 79 }
+    if y >= 25 { y = 24 }
     without_interrupts(|| {
         vga::GLOBAL_VGA_BUFFER_2.lock().set_char(
                 x, y,
