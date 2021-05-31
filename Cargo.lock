@@ -188,6 +188,7 @@ dependencies = [
  "pic8259_simple",
  "spin",
  "tinix_alloc",
+ "tinix_fs",
  "uart_16550",
  "volatile 0.2.7",
  "x86_64 0.13.6",
@@ -201,6 +202,10 @@ dependencies = [
  "linked_list_allocator",
  "x86_64 0.13.6",
 ]
+
+[[package]]
+name = "tinix_fs"
+version = "0.1.0"
 
 [[package]]
 name = "uart_16550"

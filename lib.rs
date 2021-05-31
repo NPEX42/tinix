@@ -11,6 +11,7 @@
 extern crate alloc;
 
 use bootloader::BootInfo;
+use tinix_fs::api::{FileReader, FileWriter};
 
 pub mod io;
 pub mod qemu;
@@ -60,5 +61,13 @@ pub fn pause_seconds(seconds : f32) {
 
 pub fn get_frequency() -> usize {
     unsafe {FREQ}
+}
+
+pub fn stdin() -> impl FileReader<char> {
+    crate::devices::keyboard::StandardIn::get()
+}
+
+pub fn stdout() -> impl FileWriter<u8> {
+    crate::io::terminal::StandardOut::get()
 }
 

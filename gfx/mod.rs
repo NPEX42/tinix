@@ -15,6 +15,20 @@ pub fn swap() {
     vga::swap_buffers();
 }
 
+pub fn draw_line(
+    x1 : usize, y1 : usize,
+    x2 : usize, y2 : usize,
+    color : Color
+) {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+
+    if dx == 0 { draw_rect(x1, y1, dx, dy, color) } //Vertical Line
+    if dy == 0 { draw_rect(x1, y1, dx, dy, color) } //Horizontal Line
+
+    
+}
+
 pub fn set_cell_color(x:usize, y:usize, fg:vga::Color, bg:vga::Color) {
     set_cell(x, y, b' ', fg, bg);
 }
@@ -178,3 +192,4 @@ impl fmt::Display for Cyan {
         Ok(())
     }
 }
+

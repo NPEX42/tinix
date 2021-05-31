@@ -13,3 +13,9 @@ pub fn map01_d(x : f64, min : f64, max : f64) -> f64 {
 pub fn map_d(x : f64, init_min : f64, init_max : f64, new_min : f64, new_max : f64) -> f64 {
     new_min + (new_max - new_min) * (x - init_min) / (init_max - init_min)
 }
+
+pub fn clamp_us(x : usize, min : usize, max : usize) -> usize {
+    if x < min {min} 
+    else if x > max {max} 
+    else {x}
+}

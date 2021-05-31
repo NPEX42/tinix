@@ -9,6 +9,7 @@ use super::{
 use crate::gfx;
 
 use core::panic::PanicInfo;
+use crate::interrupts::global_timer;
 
 
 
@@ -21,7 +22,8 @@ impl Drawable for panic_window {
         gfx::clear(Color::Cyan);
         gfx::draw_string!(0,0, (Color::Red, Color::Cyan), "An Unrecoverable Error Occurred...");
         gfx::draw_string!(0,1, (Color::Red, Color::Cyan), "Error Info:\n {}", self.info);
-        gfx::draw_string!(0,2, (Color::Red, Color::Cyan), "Press Any Key To Do ABSOLUTELY NOTHING. NADA. NOUGHT. ZILCH!")
+        gfx::draw_string!(0,3, (Color::Red, Color::Cyan), "Uptime: {} Seconds", global_timer::get_seconds());
+        gfx::draw_string!(0,2, (Color::Red, Color::Cyan), "Press Any Key To Do ABSOLUTELY NOTHING. NADA. NOUGHT. ZILCH!");
     } 
 }
 

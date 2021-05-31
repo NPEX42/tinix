@@ -1,9 +1,12 @@
 use core::fmt::Write;
 use crate::io::printer::Printer;
-use x86_64::instructions::interrupts;
+use x86_64::instructions::interrupts::{self, without_interrupts};
 use crate::gfx::vga::{
     ScreenBuffer, ColorCode, Char, SCREEN_HEIGHT, SCREEN_WIDTH, Color, GLOBAL_VGA_BUFFER_2
 };
+
+use tinix_fs::api::{FileWriter, File, FileInteractor};
+
 use lazy_static::lazy_static;
 use spin::Mutex;
 
@@ -42,7 +45,7 @@ impl Printer for Terminal {
         for byte in s.bytes() {
             self.print_u8(byte);
         }
-        //crate::gfx::vga::swap_buffers();
+        crate::gfx::vga::swap_buffers();
     }
 
     fn print_u8(&mut self, b:u8) {
@@ -102,4 +105,56 @@ pub fn _print(args: core::fmt::Arguments) {
 
 pub fn get_char(x:usize, y:usize) -> Char {
     WRITER.lock().buffer.get_char(x,y)
+}
+
+
+pub struct StandardOut {_private : ()}
+
+impl StandardOut {
+    pub fn get() -> StandardOut {
+        StandardOut {_private : ()}
+    }
+}
+
+impl FileInteractor for StandardOut {
+    fn at_end(&self) -> bool {
+        false
+    }
+
+    fn close(_file : File) {
+        
+    }
+
+    fn get_handle(_file : File) -> usize {
+        2
+    }
+    fn get_pos(_file : File) -> usize {
+        0
+    }
+    fn is_eof(_file : File) -> bool {
+        false
+    }
+    fn set_pos(_pos  : usize, _file : File) {
+        
+    }
+
+    fn open(_path : &str) -> File {
+        File::new(2, 1)
+    }
+}
+
+impl FileWriter<u8> for StandardOut {
+    fn open(file : &File) -> Self {
+        StandardOut {_private : ()}
+    }
+
+    fn write(&mut self, data : u8) {
+        without_interrupts(|| {
+            WRITER.lock().print_u8(data);
+        })
+    }
+
+    fn flush(&mut self) {
+        crate::gfx::swap();
+    }
 }
