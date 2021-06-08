@@ -3,13 +3,15 @@ pub mod drawables;
 pub mod widgets;
 pub mod windows;
 
-use core::fmt::{Arguments, Write};
+pub use vga::Color as Color;
+
+use core::fmt::{Write};
 
 use x86_64::instructions::interrupts::without_interrupts;
 
 use vga::Char;
 
-use vga::{Color, ColorCode, Pixel};
+use vga::{ColorCode};
 
 pub fn swap() {
     vga::swap_buffers();
@@ -82,7 +84,7 @@ pub fn draw_string(x:usize,y:usize, text:&str, color:(vga::Color, vga::Color)) {
 
 fn escape_code_to_color_tuple(chr:u8, active_colors:(vga::Color, vga::Color)) -> (vga::Color, vga::Color) {
     let mut mut_colors = active_colors;
-    if chr >= 0x00 && chr <= 0x0f { //Set Background Color
+    if  chr <= 0x0f { //Set Background Color
         mut_colors.0 = vga::Color::from_u8(chr & 0x0f);
     }
 
@@ -94,7 +96,7 @@ fn escape_code_to_color_tuple(chr:u8, active_colors:(vga::Color, vga::Color)) ->
 }
 
 fn is_color_escape(chr:u8) -> bool {
-    chr >= 0x00 && chr <= 0x1f
+   chr <= 0x1f
 }
 
 pub fn draw_rect(x:usize, y:usize, w:usize, h:usize, color:vga::Color) {

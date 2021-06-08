@@ -2,7 +2,7 @@ use core::fmt::Write;
 use crate::io::printer::Printer;
 use x86_64::instructions::interrupts::{self, without_interrupts};
 use crate::gfx::vga::{
-    ScreenBuffer, ColorCode, Char, SCREEN_HEIGHT, SCREEN_WIDTH, Color, GLOBAL_VGA_BUFFER_2
+    ScreenBuffer, ColorCode, Char, SCREEN_HEIGHT, SCREEN_WIDTH, Color
 };
 
 use tinix_fs::api::{FileWriter, File, FileInteractor};
@@ -144,7 +144,7 @@ impl FileInteractor for StandardOut {
 }
 
 impl FileWriter<u8> for StandardOut {
-    fn open(file : &File) -> Self {
+    fn open(_file : &File) -> Self {
         StandardOut {_private : ()}
     }
 

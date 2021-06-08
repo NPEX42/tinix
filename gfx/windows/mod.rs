@@ -2,7 +2,6 @@ use alloc::string::String;
 
 use super::{
     drawables::Drawable,
-    widgets::ProgressBar,
     vga::Color
 };
 
@@ -12,7 +11,7 @@ use core::panic::PanicInfo;
 use crate::interrupts::global_timer;
 
 
-
+#[allow(non_camel_case_types)]
 pub struct panic_window {
     info : String
 }

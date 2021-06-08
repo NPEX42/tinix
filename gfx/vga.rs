@@ -6,7 +6,7 @@ use volatile::Volatile;
 
 use x86_64::instructions::port::Port;
 use x86_64::instructions::interrupts::without_interrupts;
-use core::borrow::Borrow;
+
 
 const VGA_BUFFERS_START     : usize = 0x80000;
 const VGA_BUFFER_1_START    : usize = 0x90000;
@@ -253,6 +253,7 @@ impl ScreenBuffer {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[repr(u8)]
+#[allow(non_camel_case_types)]
 pub enum VgaMode {
     TEXT_80x25  = 0x03,
     GFX_320x200 = 0x13

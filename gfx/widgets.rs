@@ -1,7 +1,7 @@
 use super::vga::Color;
 use super::drawables::Drawable;
+use crate::gfx as gfx;
 use alloc::{
-    vec,
     vec::Vec,
     string::String
 };
@@ -73,20 +73,18 @@ pub struct TextArea {
     y           : usize,
     idx         : usize,
     max_lines   : usize,
-    max_cols    : usize,
     text        : Vec<String>,
     color       : (Color, Color),
     use_line_no : bool,
 }
 
 impl TextArea {
-    pub fn new(x : usize, y : usize, max_lines : usize, max_cols : usize, color : (Color, Color)) -> TextArea {
+    pub fn new(x : usize, y : usize, max_lines : usize, _max_cols : usize, color : (Color, Color)) -> TextArea {
         TextArea {
             x           : x,
             y           : y,
             idx         : 0,
             max_lines   : max_lines,
-            max_cols    : max_cols,
             text        : Vec::new(),
             color       : color,
             use_line_no : true
@@ -94,7 +92,7 @@ impl TextArea {
     }
 
     pub fn set_index(&mut self, idx : usize) {
-        self.idx = clamp_us(idx, 0, self.max_lines);
+        self.idx = clamp_us(idx, 0, self.text.len());
     }
 
     pub fn remove_index(&mut self, idx : usize) {
@@ -124,18 +122,27 @@ impl TextArea {
 
 impl Drawable for TextArea {
     fn draw_self(&self) {
-        let mut idx = 1;
-        let mut x = 1;
-        if self.text.len() > self.max_lines { idx += self.text.len() - self.max_lines }
-        for i in idx..=self.text.len() {
-        let line = self.text.get(i).unwrap();
-        if self.use_line_no {
-            super::draw_string!(0,x,(Color::White, Color::Blue), "[{:02}] {}",idx, line);
+        let starting_index = if self.text.len() > 0 && self.idx + self.max_lines < self.text.len() {
+            self.text.len() - self.max_lines
         } else {
-            super::draw_string!(0,x,(Color::White, Color::Blue), "{}", line);
+            self.idx
+        };
+        let mut y_offset = 0;
+        for i in starting_index..self.text.len() {
+            if self.use_line_no {
+                gfx::draw_string!(self.x, self.y + y_offset, self.color,
+                    "[{:03}] {}", i, self.text[i]
+                );
+            } else {
+                gfx::draw_string!(self.x, self.y + y_offset, self.color,
+                    "{}", self.text[i]
+                );
+            }
+
+            y_offset += 1;
         }
-        idx += 1;
-        x += 1;
-        }   
+
+
+
     }
 }

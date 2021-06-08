@@ -223,6 +223,7 @@ fn to_ascii_key(scancode : u8) -> Option<char> {
 
 #[repr(C)]
 #[derive(Debug)]
+#[allow(non_camel_case_types)]
 pub enum KeyCode {
     NUL = 0,
     SOH,

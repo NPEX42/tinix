@@ -6,11 +6,8 @@ use x86_64::structures::idt::{
 
 use x86_64::structures::idt::PageFaultErrorCode;
 
-use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
-use spin::Mutex;
-
 use x86_64::instructions::port::Port;
-use crate::{println, print};
+use crate::{println};
 use crate::interrupts::pic::InterruptIndex;
 
 lazy_static! {

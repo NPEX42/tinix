@@ -2,11 +2,11 @@ use x86_64::instructions::port::Port;
 use x86_64::instructions::interrupts::without_interrupts;
 
 pub fn set_frequency(f : usize) {
-    let mut value = FREQUENCY / f;
+    let value = FREQUENCY / f;
     unsafe {set_reload_value(value as u16)};
 }
 
-unsafe fn set_reload_value(mut value : u16) {    
+unsafe fn set_reload_value(value : u16) {    
     without_interrupts( || {
         let mut data_port = Port::new(DATA_PORT_0);
         let mut command_port = Port::new(COMMAND_PORT);

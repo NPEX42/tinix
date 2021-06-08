@@ -8,6 +8,14 @@
 #![feature(const_fn)]
 #![feature(asm)]
 
+#![allow(non_camel_case_types)]
+#![allow(dead_code, deprecated)]
+#![allow(unused_assignments)]
+
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::tests::test_runner)]
+#![reexport_test_harness_main = "test_main"]
+
 extern crate alloc;
 
 use bootloader::BootInfo;
@@ -20,6 +28,16 @@ pub mod interrupts;
 pub mod utils;
 pub mod devices;
 pub mod maths;
+pub mod api;
+mod tests;
+
+pub use api as user; 
+
+pub use alloc::boxed::Box as Box;
+pub use alloc::string::String as String;
+pub use alloc::vec as vec;
+
+pub use alloc::vec::Vec as Vec;
 
 static mut FREQ : usize = 0;
 
